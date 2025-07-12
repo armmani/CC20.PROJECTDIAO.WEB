@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { useUserStore } from "../stores/userStore";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { registerSchema } from "../utils/validator";
@@ -8,7 +7,6 @@ import { createUser } from "../api/userApi";
 
 function CreateUserModal({ isOpen, onClose, onUserCreated }) {
   const modalRef = useRef(null);
-  const token = useUserStore((state) => state.token);
 
   const {
     register,

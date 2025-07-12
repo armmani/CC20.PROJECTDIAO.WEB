@@ -7,7 +7,6 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useUserStore } from "../stores/userStore";
 import { getAllUsers } from "../api/userApi";
 import CreateUserModal from "../components/CreateUserModal";
 import UpdateUserModal from "../components/UpdateUserModal";
@@ -20,18 +19,11 @@ function Reports() {
   const [isModalShow, setIsModalShow] = useState(false);
   const [editUser, setEditUser] = useState(null)
 
-  const token = useUserStore((state) => state.token);
-
   const fetchUsers = async () => {
-    if (!token) {
-      setError("Unauthorized ! Please LOG IN Again");
-      setLoading(false);
-      return;
-    }
     try {
       setLoading(true);
-      const response = await getAllUsers(token);
-      console.log("response.data", response.data);
+      const response = await getAllUsers();
+      // console.log("response.data", response.data);
       setUsers(response.data.result);
       setError(null);
     } catch (err) {
@@ -44,12 +36,12 @@ function Reports() {
 
   useEffect(() => {
     fetchUsers();
-  }, [token]);
+  }, []);
 
   if (loading) {
     return (
       <p>
-        <LoaderCircle className="animate-spin" />
+        <LoaderCircle size={90} className="animate-spin" />
       </p>
     );
   }
@@ -64,7 +56,7 @@ function Reports() {
 
   return (
     <>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center bg-[#1E130B]">
         <div className="flex w-[900px] justify-between m-4 gap-4">
           <div className="stats shadow flex-1">
             <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
@@ -158,9 +150,9 @@ function Reports() {
         </div>
         <div className="flex">
           <div className="overflow-x-auto rounded-box  bg-[#2A1D13] text-[#DC7C3C]">
-            <table className="table w-[900px]">
+            <table className="table w-[900px] text-center">
               <thead>
-                <tr className="text-[#98735B] text-center">
+                <tr className="text-[#98735B]">
                   <th>Username</th>
                   <th>Role</th>
                   <th>Status</th>
@@ -169,7 +161,7 @@ function Reports() {
               </thead>
               <tbody>
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-[#1E130B] text-center">
+                  <tr key={user.id} className="hover:bg-[#1E130B]">
                     <td>{user.username}</td>
                     <td>
                       <span className={`badge badge-soft badge-success`}>
@@ -193,7 +185,7 @@ function Reports() {
         isOpen={isModalShow}
         onClose={() => setIsModalShow(false)}
         onUserCreated={fetchUsers}
-      />;
+      />
       <UpdateUserModal
       userToEdit={editUser}
       isOpen={!!editUser}

@@ -1,17 +1,11 @@
-import { addToken } from "../stores/authStore";
+import axiosCenter from "./axiosCenter";
 
-const petApi = axios.create({
-  baseURL: "http://localhost:6969/pets",
-});
+const petApi = {
+  getAllPets: () => axiosCenter.get("/pets"),
+  getPetById: (id) => axiosCenter.get(`/pets/${id}`),
+  createPet: (petData) => axiosCenter.post("/pets", petData),
+  updatePet: (petId, updatePetData) =>
+    axiosCenter.patch(`/pets/${petId}`, updatePetData),
+};
 
-export const getAllPets = (token) => {
-  petApi.get("/", addToken(token))
-}
-
-export const getPetById = (id, token) => {
-petApi.get(`/${id}`, addToken(token))
-}
-
-export const createPet = (pet_name, species, breed, gender, sterilization, birth_date, status) => {
-  petApi.post("/", addToken(token))
-}
+export const {createPet, getAllPets, getPetById, updatePet} = petApi

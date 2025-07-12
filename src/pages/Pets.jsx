@@ -1,6 +1,64 @@
-import { Calendar, Heart, PawPrint, SquareActivity } from "lucide-react";
+import {
+  Calendar,
+  Heart,
+  LoaderCircle,
+  PawPrint,
+  SquareActivity,
+  SquarePen,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { getAllPets } from "../api/petApi";
+import CreatePetModal from "../components/CreatePetModal";
+import UpdatePetModal from "../components/UpdatePetModal";
 
 function Pets() {
+  const [pets, setPets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [smartSearch, setSmartSearch] = useState("");
+  const [speciesFilter, setSpeciesFilter] = useState("");
+  const [isModalShow, setIsModalShow] = useState(false);
+  const [editPet, setEditPet] = useState(null);
+
+  const fetchPets = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllPets();
+      setPets(response.data.result);
+      setError(null);
+    } catch (err) {
+      setError("Failed to Fetch Pet Data");
+      console.log("err", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchPets();
+  }, []);
+
+  if (loading) {
+    return (
+      <p>
+        <LoaderCircle size={90} className="animate-spin" />
+      </p>
+    );
+  }
+  if (error) {
+    return <p className="text-red-300">{error}</p>;
+  }
+
+  const filteredPets = pets
+    .filter((pet) => {
+      if (!speciesFilter) {
+        return true;
+      }
+      return pet.species === speciesFilter;
+    })
+    .filter((pet) =>
+      pet.pet_name.toLowerCase().includes(smartSearch.toLowerCase())
+    );
+    console.log("Current Pet to Edit:", editPet)
   return (
     <>
       <div className="flex flex-col items-center">
@@ -13,41 +71,48 @@ function Pets() {
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   Total Pets
                 </div>
-                <div className="stat-value text-[#E09766]">345</div>
+                <div className="stat-value text-[#E09766]">{pets.length}</div>
               </div>
             </div>
           </div>
           <div className="stats shadow flex-1">
             <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-            <Heart size={48} color="#dc7c3c" />
+              <Heart size={48} color="#dc7c3c" />
 
               <div className="flex flex-col">
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   Healthy
                 </div>
-                <div className="stat-value text-[#E09766]">300</div>
+                <div className="stat-value text-[#E09766]">
+                  {pets.filter((pet) => pet.status === null).length}
+                </div>
               </div>
             </div>
-          </div><div className="stats shadow flex-1">
+          </div>
+          <div className="stats shadow flex-1">
             <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-            <SquareActivity size={48} color="#dc7c3c" />
+              <SquareActivity size={48} color="#dc7c3c" />
 
               <div className="flex flex-col">
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   In Treatment
                 </div>
-                <div className="stat-value text-[#E09766]">45</div>
+                <div className="stat-value text-[#E09766]">
+                  {" "}
+                  {pets.filter((pet) => pet.status !== null).length}
+                </div>
               </div>
             </div>
-          </div><div className="stats shadow flex-1">
+          </div>
+          <div className="stats shadow flex-1">
             <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-            <Calendar size={48} color="#dc7c3c" />
+              <Calendar size={48} color="#dc7c3c" />
 
               <div className="flex flex-col">
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   Recent Visits
                 </div>
-                <div className="stat-value text-[#E09766]">200</div>
+                <div className="stat-value text-[#E09766]">xxx</div>
               </div>
             </div>
           </div>
@@ -75,51 +140,60 @@ function Pets() {
                 <input
                   type="search"
                   className="grow placeholder:text-[#E09766] text-[#E09766]"
-                  placeholder="Search Pets / Owners"
+                  placeholder="Search Pets"
+                  value={smartSearch}
+                  onChange={(e) => setSmartSearch(e.target.value)}
                 />
               </label>
             </div>
-            <div className="flex flex-1/3">
+            <div className="flex flex-1/5">
               <div className="dropdown dropdown-start">
                 <div
                   tabIndex={0}
                   role="button"
                   className="btn m-1 bg-[#2A1D13] text-[#E09766] border-[#433024]"
-                >
-                  All Species
-                </div>
+                >{speciesFilter || "ALL"}</div>
+
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu border border-[#433024] bg-[#2A1D13] text-[#E09766] rounded-box z-1 w-52 p-2 shadow-sm"
+                  className="dropdown-content menu border border-[#433024] bg-[#2A1D13] text-[#E09766] rounded-box z-[1] w-52 p-2 shadow-sm"
                 >
                   <li>
-                    <a>Canine</a>
+                    <a onClick={() => setSpeciesFilter("")}>ALL</a>
                   </li>
                   <li>
-                    <a>Feline</a>
+                    <a onClick={() => setSpeciesFilter("CANINE")}>CANINE</a>
                   </li>
                   <li>
-                    <a>Others</a>
+                    <a onClick={() => setSpeciesFilter("FELINE")}>FELINE</a>
+                  </li>
+                  <li>
+                    <a onClick={() => setSpeciesFilter("EXOTIC")}>EXOTIC</a>
+                  </li>
+                  <li>
+                    <a onClick={() => setSpeciesFilter("OTHERS")}>OTHERS</a>
                   </li>
                 </ul>
               </div>
             </div>
           </div>
 
-          <button className="btn mr-4 bg-[#CD7438] text-[#2A1D13]">
+          <button
+            onClick={() => setIsModalShow(true)}
+            className="btn mr-4 bg-[#CD7438] text-[#2A1D13]"
+          >
             + Add New Pet
           </button>
         </div>
         <div className="flex">
           <div className="overflow-x-auto rounded-box border border-[#3E2B20] bg-[#2A1D13] text-[#DC7C3C]">
-            <table className="table w-[900px]">
-              {/* head */}
+            <table className="table w-[900px] text-center">
               <thead>
                 <tr className="text-[#98735B]">
                   <th>Name</th>
                   <th>Species/Breed</th>
                   <th>Gender</th>
-                  <th>Age</th>
+                  <th>Birth Date</th>
                   <th>Weight</th>
                   <th>Owner</th>
                   <th>Last Visit</th>
@@ -128,34 +202,47 @@ function Pets() {
                 </tr>
               </thead>
               <tbody>
-                {/* row 1 */}
-                <tr className="hover:bg-[#1E130B]">
-                  <td>Cy Ganderton</td>
-                  <td>Quality Control Specialist</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                </tr>
-                <tr className="hover:bg-[#1E130B]">
-                  <td>Cy Ganderton</td>
-                  <td>Quality Control Specialist</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                </tr>
+                {filteredPets.map((pet) => (
+                  <tr className="hover:bg-[#1E130B]">
+                    <td>{pet.pet_name}</td>
+                    <td className="flex flex-col">
+                      <div>{pet.species}</div>
+                      <div>{pet.breed}</div>
+                    </td>
+                    <td>{pet.gender}</td>
+                    <td>
+                      {new Date(pet.birth_date).toLocaleDateString("th-TH")}
+                    </td>
+                    <td>HardCodeWeight</td>
+                    <td>{pet.ownerId}</td>
+                    <td>HardCodeLastVisit</td>
+                    <td>{pet.status}</td>
+                    <td>
+                      {" "}
+                      <button
+                        onClick={() => setEditPet(pet)}
+                        className="btn btn-ghost"
+                      >
+                        <SquarePen />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </div>
       </div>
+      <CreatePetModal
+        isOpen={isModalShow}
+        onClose={() => setIsModalShow(false)}
+        onPetCreated={fetchPets}
+      />
+      <UpdatePetModal
+      petToEdit={editPet}
+      isOpen={!!editPet}
+      onClose={() => setEditPet(null)}
+      onPetUpdated = {fetchPets} />
     </>
   );
 }

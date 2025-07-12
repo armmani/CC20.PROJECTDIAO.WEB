@@ -66,7 +66,7 @@ function UpdateUserModal({ isOpen, onClose,userToEdit, onUserUpdated }) {
               Cancel
             </button>
             <button type="submit" className="btn bg-[#CD7438] text-[#2A1D13]">
-              Create
+              Update
             </button>
           </div>
         </fieldset>
