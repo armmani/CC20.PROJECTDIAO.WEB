@@ -27,7 +27,7 @@ function Pets() {
       setPets(response.data.result);
       setError(null);
     } catch (err) {
-      setError("Failed to Fetch Pet Data");
+      setError("Failed to Load Pet List");
       console.log("err", err);
     } finally {
       setLoading(false);
@@ -58,7 +58,7 @@ function Pets() {
     .filter((pet) =>
       pet.pet_name.toLowerCase().includes(smartSearch.toLowerCase())
     );
-    console.log("Current Pet to Edit:", editPet)
+  // console.log("Current Pet to Edit:", editPet)
   return (
     <>
       <div className="flex flex-col items-center">
@@ -152,7 +152,9 @@ function Pets() {
                   tabIndex={0}
                   role="button"
                   className="btn m-1 bg-[#2A1D13] text-[#E09766] border-[#433024]"
-                >{speciesFilter || "ALL"}</div>
+                >
+                  {speciesFilter || "ALL"}
+                </div>
 
                 <ul
                   tabIndex={0}
@@ -203,7 +205,7 @@ function Pets() {
               </thead>
               <tbody>
                 {filteredPets.map((pet) => (
-                  <tr className="hover:bg-[#1E130B]">
+                  <tr key={pet.id} className="hover:bg-[#1E130B]">
                     <td>{pet.pet_name}</td>
                     <td className="flex flex-col">
                       <div>{pet.species}</div>
@@ -214,14 +216,14 @@ function Pets() {
                       {new Date(pet.birth_date).toLocaleDateString("th-TH")}
                     </td>
                     <td>HardCodeWeight</td>
-                    <td>{pet.ownerId}</td>
+                    <td>{pet.owner.owner_name}</td>
                     <td>HardCodeLastVisit</td>
                     <td>{pet.status}</td>
                     <td>
                       {" "}
                       <button
                         onClick={() => setEditPet(pet)}
-                        className="btn btn-ghost"
+                        className="btn btn-link"
                       >
                         <SquarePen />
                       </button>
@@ -239,10 +241,11 @@ function Pets() {
         onPetCreated={fetchPets}
       />
       <UpdatePetModal
-      petToEdit={editPet}
-      isOpen={!!editPet}
-      onClose={() => setEditPet(null)}
-      onPetUpdated = {fetchPets} />
+        petToEdit={editPet}
+        isOpen={!!editPet}
+        onClose={() => setEditPet(null)}
+        onPetUpdated={fetchPets}
+      />
     </>
   );
 }

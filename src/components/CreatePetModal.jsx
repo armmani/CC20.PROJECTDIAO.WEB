@@ -1,10 +1,14 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { createPet } from "../api/petApi";
+import { getAllOwners } from "../api/ownerApi";
 
 function CreatePetModal({ isOpen, onClose, onPetCreated }) {
   const modalRef = useRef(null);
+  const [smartSearch, setSmartSearch] = useState("");
+  const [allOwners, setAllOwners] = useState([]);
+  const [selectedOwnerId, setSelectedOwnerId] = useState(null);
   const {
     register,
     handleSubmit,
@@ -15,13 +19,36 @@ function CreatePetModal({ isOpen, onClose, onPetCreated }) {
   useEffect(() => {
     if (isOpen) {
       modalRef.current?.showModal();
+      const fetchOwners = async () => {
+        try {
+          const response = await getAllOwners();
+          setAllOwners(response.data.owners);
+        } catch (err) {
+          console.log("Failed to Fetch Owner", err);
+          toast.error("cannnot Load Owner List");
+        }
+      };
+      fetchOwners();
     } else {
       modalRef.current?.close();
+      reset();
+      setSmartSearch("");
+      setSelectedOwnerId(null);
     }
-  }, [isOpen]);
+  }, [isOpen, reset]);
+
+  const filterOwners = smartSearch
+    ? allOwners.filter((owner) =>
+        owner.owner_name.toLowerCase().includes(smartSearch.toLowerCase())
+      )
+    : [];
 
   const onSubmit = async (data) => {
-    const changeToBoolean = {...data, sterilization: data.sterilization === 'TRUE', birth_date: new Date(data.birth_date).toISOString()}
+    const changeToBoolean = {
+      ...data,
+      sterilization: data.sterilization === "TRUE",
+      birth_date: new Date(data.birth_date).toISOString(),
+    };
     try {
       await createPet(changeToBoolean);
       toast.success("Pet Created");
@@ -39,7 +66,7 @@ function CreatePetModal({ isOpen, onClose, onPetCreated }) {
       <form onSubmit={handleSubmit(onSubmit)}>
         <fieldset className="fieldset text-[#DC7C3C] bg-[#1E130B] border border-[#3C2A1F] rounded-box w-xs p-4">
           <legend className="fieldset-legend text-[#DC7C3C]">
-            Create New User
+            Create New Pet
           </legend>
 
           <label className="label">Pet Name</label>
@@ -87,7 +114,14 @@ function CreatePetModal({ isOpen, onClose, onPetCreated }) {
             <option value="ACTIVE">ACTIVE</option>
             <option value="INACTIVE">INACTIVE</option>
           </select>
-          <label className="label">Owner ID</label>
+          <label className="label">Owner</label>
+          <input
+            {...register("ownerId")}
+            type="text"
+            className="input bg-[#1E130B]"
+            placeholder="Owner ID"
+            disabled
+          />
           <input
             {...register("ownerId")}
             type="text"

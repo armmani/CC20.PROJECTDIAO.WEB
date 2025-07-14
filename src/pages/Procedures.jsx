@@ -1,6 +1,64 @@
-import { Hand } from "lucide-react";
+import { Hand, LoaderCircle, SquarePen, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { deleteProcedure, getAllProcedures } from "../api/procedureApi";
 
 function Procedures() {
+  const [procedure, setProcedure] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [smartSearch, setSmartSearch] = useState("");
+  const [isModalShow, setIsModalShow] = useState(false);
+  const [editMed, setEditMed] = useState(null);
+
+  const fetchProcedure = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllProcedures();
+      setProcedure(response.data.result);
+      setError(null);
+    } catch (err) {
+      setError("Failed to Load Procedure List");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProcedure();
+  }, []);
+
+  if (loading) {
+    return (
+      <p>
+        <LoaderCircle size={90} className="animate-spin" />
+      </p>
+    );
+  }
+
+  if (error) {
+    return <p className="text-red-300">{error}</p>;
+  }
+
+  const filteredProcedures = procedure.filter((procedure) =>
+    procedure.name.toLowerCase().includes(smartSearch.toLocaleLowerCase())
+  );
+
+  const hdlDelete = async (procId) => {
+    console.log(procId);
+    try {
+      const confirmed = window.confirm(
+        "Are you sure you want to delete this procedure?"
+      );
+      if (confirmed) {
+        await deleteProcedure(procId);
+        toast.success("Procedure Deleted");
+        fetchMeds();
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to Delete Medicine");
+    }
+  };
   return (
     <>
       <div className="flex flex-col items-center">
@@ -13,7 +71,9 @@ function Procedures() {
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   Total Procedures
                 </div>
-                <div className="stat-value text-[#E09766]">50</div>
+                <div className="stat-value text-[#E09766]">
+                  {procedure.length}
+                </div>
               </div>
             </div>
           </div>
@@ -42,43 +102,54 @@ function Procedures() {
                   type="search"
                   className="grow placeholder:text-[#E09766] text-[#E09766]"
                   placeholder="Search Procedures"
+                  value={smartSearch}
+                  onChange={(e) => setSmartSearch(e.target.value)}
                 />
               </label>
             </div>
           </div>
 
-          <button className="btn mr-4 bg-[#CD7438] text-[#2A1D13]">
+          <button
+            onClick={() => setIsModalShow(true)}
+            className="btn mr-4 bg-[#CD7438] text-[#2A1D13]"
+          >
             + Add New Procedure
           </button>
         </div>
         <div className="flex">
           <div className="overflow-x-auto rounded-box border border-[#3E2B20] bg-[#2A1D13] text-[#DC7C3C]">
-            <table className="table w-[900px]">
-              {/* head */}
+            <table className="table w-[900px] text-center">
               <thead>
                 <tr className="text-[#98735B]">
                   <th>Name</th>
                   <th>Description</th>
                   <th>Cost</th>
-                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="hover:bg-[#1E130B]">
-                  <td>Wound Dressing</td>
-                  <td>Dressing the wound</td>
-                  <td>100</td>
-                  <td>ACTIVE</td>
-                  <td>Checked</td>
-                </tr>
-                <tr className="hover:bg-[#1E130B]">
-                  <td>Wound Dressing</td>
-                  <td>Dressing the wound</td>
-                  <td>100</td>
-                  <td>ACTIVE</td>
-                  <td>Checked</td>
-                </tr>
+                {filteredProcedures.map((procedure) => (
+                  <tr key={procedure.id} className="hover:bg-[#1E130B]">
+                    <td>{procedure.name}</td>
+                    <td>{procedure.description}</td>
+                    <td>{procedure.cost}</td>
+                    <td>
+                      {" "}
+                      <button
+                        onClick={() => setEditMed(medication)}
+                        className="btn btn-link"
+                      >
+                        <SquarePen />
+                      </button>
+                      <button
+                        onClick={() => hdlDelete(medication.id)}
+                        className="btn btn-link"
+                      >
+                        <Trash2 />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

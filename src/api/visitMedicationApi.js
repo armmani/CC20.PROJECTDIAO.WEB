@@ -1,3 +1,13 @@
-const visitMedicationApi = axios.create({
-  baseURL: "http://localhost:6969/visit-medications",
-});
+import axiosCenter from "./axiosCenter";
+
+const visitMedicationApi = {
+  visitUpdateMedication: (id, updateVisitUpdateMedicationData) =>
+    axiosCenter.patch(
+      `/visit-medications/${id}`,
+      updateVisitUpdateMedicationData
+    ),
+  visitDeleteMedication: (id) => axiosCenter.delete(`/visit-medications/${id}`),
+};
+
+export const { visitUpdateMedication, visitDeleteMedication } =
+  visitMedicationApi;

@@ -1,6 +1,9 @@
+import axiosCenter from "./axiosCenter";
 
+const visitProcedureApi = {
+  visitUpdateProcedure: (id, updateVisitUpdateProcedure) =>
+    axiosCenter.patch(`/visit-procedures/${id}`, updateVisitUpdateProcedure),
+  visitDeleteProcedure: (id) => axiosCenter.delete(`/visit-procedures/${id}`),
+};
 
-const visitProcedureApi = axios.create({
-  baseURL: "http://localhost:6969/visit-procedures",
-});
-
+export const { visitUpdateProcedure, visitDeleteProcedure } = visitProcedureApi;

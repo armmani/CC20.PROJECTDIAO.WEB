@@ -40,7 +40,7 @@ function Header() {
       <div className="flex-none">
         {showBackButton && (
           <Link to="/">
-            <button className="btn btn-ghost text-[#D87A3B]">
+            <button className="btn btn-link text-[#D87A3B]">
               <ArrowLeft color="#dc7c3c" />
               Bact To Dashboard
             </button>
@@ -53,7 +53,7 @@ function Header() {
       </div>
       <div>
         {showLogoutButton && (
-          <button className="btn btn-ghost text-[#D87A3B]" onClick={hdlLogout}>
+          <button className="btn btn-link text-[#D87A3B]" onClick={hdlLogout}>
             LOG OUT
           </button>
         )}

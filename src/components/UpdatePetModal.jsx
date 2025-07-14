@@ -14,6 +14,7 @@ function UpdatePetModal({ isOpen, onClose, onPetUpdated, petToEdit }) {
       modalRef.current?.close();
     }
   }, [isOpen]);
+
   useEffect(() => {
     if (petToEdit) {
       const formattedDate = new Date(petToEdit.birth_date)
@@ -57,7 +58,7 @@ function UpdatePetModal({ isOpen, onClose, onPetUpdated, petToEdit }) {
     <dialog ref={modalRef} className="modal" onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <fieldset className="fieldset text-[#DC7C3C] bg-[#1E130B] border border-[#3C2A1F] rounded-box w-xs p-4">
-          <legend className="fieldset-legend text-[#DC7C3C]">Update Pet</legend>
+          <legend className="fieldset-legend text-[#DC7C3C]">Pet Profile</legend>
 
           <label className="label">Pet Name</label>
           <input
