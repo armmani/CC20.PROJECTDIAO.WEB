@@ -1,10 +1,7 @@
 import { useEffect, useRef } from "react";
-import { useUserStore } from "../stores/userStore";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { registerSchema } from "../utils/validator";
 import { toast } from "react-toastify";
-import { createUser, updateUser } from "../api/userApi";
+import { updateUser } from "../../../api/userApi";
 
 function UpdateUserModal({ isOpen, onClose,userToEdit, onUserUpdated }) {
   const modalRef = useRef(null);
@@ -59,6 +56,10 @@ function UpdateUserModal({ isOpen, onClose,userToEdit, onUserUpdated }) {
           <select {...register("role")} className="select bg-[#1E130B]">
             <option value="VET">Vet</option>
             <option value="ADMIN">Admin</option>
+          </select>
+          <select {...register("status")} className="select bg-[#1E130B]">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
           </select>
 
           <div className="modal-action">

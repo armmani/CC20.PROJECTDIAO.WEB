@@ -9,12 +9,49 @@ import {
   Stethoscope,
   UsersRound,
 } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useUserStore } from "../stores/userStore";
+import { useEffect, useState } from "react";
+import { getAllPets } from "../api/petApi";
+import { getAllOwners } from "../api/ownerApi";
 
-function Dashboard() {
+function DashboardPage() {
   const user = useUserStore((state) => state.user);
-  // console.log("user", user);
+  const navigate = useNavigate();
+  const [pets, setPets] = useState([]);
+  const [owners, setOwners] = useState([]);
+
+  useEffect(() => {
+    const fetchPets = async () => {
+      try {
+        const response = await getAllPets();
+        setPets(response.data.result);
+      } catch (err) {
+        setPets([]);
+      }
+    };
+    fetchPets();
+  }, []);
+
+  useEffect(() => {
+    const fetchOwners = async () => {
+      try {
+        const response = await getAllOwners();
+        setOwners(response.data.result);
+      } catch (err) {
+        setOwners([]);
+      }
+    };
+    fetchOwners();
+  }, []);
+
+  const hdlCreateVisit = () => {
+    navigate("/visits/create");
+  };
+
+  const healthyPetsCount = pets.filter(pet => pet.diagnosis === null).length;
+  const activePetsCount = pets.filter(pet => pet.status === "ACTIVE").length;
+
   return (
     <>
       <div className="flex flex-col items-center">
@@ -27,7 +64,7 @@ function Dashboard() {
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   Total Pets
                 </div>
-                <div className="stat-value text-[#E09766]">345</div>
+                <div className="stat-value text-[#E09766]">{pets.length}</div>
               </div>
             </div>
           </div>
@@ -39,7 +76,7 @@ function Dashboard() {
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   Healthy
                 </div>
-                <div className="stat-value text-[#E09766]">300</div>
+                <div className="stat-value text-[#E09766]">{healthyPetsCount}</div>
               </div>
             </div>
           </div>
@@ -50,7 +87,7 @@ function Dashboard() {
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   Pet Owners
                 </div>
-                <div className="stat-value text-[#E09766]">45</div>
+                <div className="stat-value text-[#E09766]">{owners.length}</div>
               </div>
             </div>
           </div>
@@ -62,13 +99,15 @@ function Dashboard() {
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   Active Cases
                 </div>
-                <div className="stat-value text-[#E09766]">200</div>
+                <div className="stat-value text-[#E09766]">{activePetsCount}</div>
               </div>
             </div>
           </div>
         </div>
-
-        <button className="btn bg-[#880202] text-[#c0c0c0] rounded-xl w-[900px] h-[50px] mb-4">
+        <button
+          onClick={hdlCreateVisit}
+          className="btn bg-[#880202] text-[#c0c0c0] rounded-xl w-[900px] h-[50px] mb-4"
+        >
           + Add New Treatment Record
           <ScanHeart />
         </button>
@@ -240,4 +279,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default DashboardPage;

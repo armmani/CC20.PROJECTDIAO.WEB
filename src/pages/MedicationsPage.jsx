@@ -1,41 +1,40 @@
 import {
-  Calendar,
-  CircleDollarSign,
+  BriefcaseMedical,
   LoaderCircle,
+  Pill,
   SquarePen,
-  UserCheck,
-  UsersRound,
+  Syringe,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getAllUsers } from "../api/userApi";
-import CreateUserModal from "../components/CreateUserModal";
-import UpdateUserModal from "../components/UpdateUserModal";
+import { deleteMed, getAllMeds } from "../api/medicationApi";
+import CreateMedModal from "../components/modal/med.modal/CreateMedModal";
+import UpdateMedModal from "../components/modal/med.modal/UpdateMedModal";
+import { toast } from "react-toastify";
 
-function Reports() {
-  const [users, setUsers] = useState([]);
+function MedicationsPage() {
+  const [meds, setMeds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [smartSearch, setSmartSearch] = useState("");
   const [isModalShow, setIsModalShow] = useState(false);
-  const [editUser, setEditUser] = useState(null)
+  const [editMed, setEditMed] = useState(null);
 
-  const fetchUsers = async () => {
+  const fetchMeds = async () => {
     try {
       setLoading(true);
-      const response = await getAllUsers();
-      // console.log("response.data", response.data);
-      setUsers(response.data.result);
+      const response = await getAllMeds();
+      setMeds(response.data.result);
       setError(null);
     } catch (err) {
-      setError("Failed to Fetch User Data");
-      console.log("err", err);
+      setError("Failed to Load Medication List");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchMeds();
   }, []);
 
   if (loading) {
@@ -50,72 +49,77 @@ function Reports() {
     return <p className="text-red-300">{error}</p>;
   }
 
-  const filteredUsers = users.filter((user) =>
-    user.username.toLowerCase().includes(smartSearch.toLowerCase())
+  const filteredMeds = meds.filter((medication) =>
+    medication.name.toLowerCase().includes(smartSearch.toLocaleLowerCase())
   );
+
+  const hdlDelete = async(medId) => {
+    console.log(medId)
+    try {
+      const confirmed = window.confirm(
+        "Are you sure you want to delete this medication?"
+      );
+      if (confirmed) {
+        await deleteMed(medId);
+        toast.success("Medication Deleted");
+        fetchMeds();
+      }
+    } catch (err) {
+      console.log(err)
+      toast.error("Failed to Delete Medicine")
+    }
+  }
+
+  const txCount = meds.filter((med) => med.type === "TX").length;
+  const rxCount = meds.filter((med) => med.type === "RX").length;
 
   return (
     <>
-      <div className="flex flex-col items-center bg-[#1E130B]">
+      <div className="flex flex-col items-center">
         <div className="flex w-[900px] justify-between m-4 gap-4">
           <div className="stats shadow flex-1">
             <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-              <UsersRound size={48} color="#dc7c3c" />
+              <BriefcaseMedical size={48} color="#dc7c3c" />
 
               <div className="flex flex-col">
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  Total Users
+                  Total Medications
                 </div>
-                <div className="stat-value text-[#E09766]">{users.length}</div>
+                <div className="stat-value text-[#E09766]">{meds.length}</div>
               </div>
             </div>
           </div>
           <div className="stats shadow flex-1">
             <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-              <UserCheck size={48} color="#dc7c3c" />
+              <Syringe size={48} color="#dc7c3c" />
 
               <div className="flex flex-col">
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  Active User
+                  Tx - Treatment
                 </div>
-                <div className="stat-value text-[#E09766]">
-                  {users.filter((user) => user.status === "ACTIVE").length}
-                </div>
+                <div className="stat-value text-[#E09766]">{txCount}</div>
               </div>
             </div>
           </div>
           <div className="stats shadow flex-1">
             <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-              <CircleDollarSign size={48} color="#dc7c3c" />
+              <Pill size={48} color="#dc7c3c" />
 
               <div className="flex flex-col">
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  Total Revenue
+                  Rx - Prescription
                 </div>
-                <div className="stat-value text-[#E09766]">xxx</div>
-              </div>
-            </div>
-          </div>
-          <div className="stats shadow flex-1">
-            <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-              <Calendar size={48} color="#dc7c3c" />
-
-              <div className="flex flex-col">
-                <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  Total Visits
-                </div>
-                <div className="stat-value text-[#E09766]">xxx</div>
+                <div className="stat-value text-[#E09766]">{rxCount}</div>
               </div>
             </div>
           </div>
         </div>
-        <div>Graph</div>
         <div className="flex border border-[#3C2A1F] bg-[#2A1D13] m-6 rounded-box w-[900px] justify-between items-center">
           <div className="flex items-center m-4 flex-1">
             <div className="flex w-full">
               <label className="input bg-[#2A1D13] border-[#433024] w-full">
                 <svg
-                  className="h-[1em] opacity-50 "
+                  className="h-[1em] opacity-50"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                 >
@@ -131,9 +135,9 @@ function Reports() {
                   </g>
                 </svg>
                 <input
-                  type="text"
+                  type="search"
                   className="grow placeholder:text-[#E09766] text-[#E09766]"
-                  placeholder="Search Users"
+                  placeholder="Search Medications"
                   value={smartSearch}
                   onChange={(e) => setSmartSearch(e.target.value)}
                 />
@@ -145,33 +149,41 @@ function Reports() {
             onClick={() => setIsModalShow(true)}
             className="btn mr-4 bg-[#CD7438] text-[#2A1D13]"
           >
-            + Create New User
+            + Add New Medication
           </button>
         </div>
         <div className="flex">
-          <div className="overflow-x-auto rounded-box  bg-[#2A1D13] text-[#DC7C3C]">
+          <div className="overflow-x-auto rounded-box border border-[#3E2B20] bg-[#2A1D13] text-[#DC7C3C]">
             <table className="table w-[900px] text-center">
               <thead>
                 <tr className="text-[#98735B]">
-                  <th>Username</th>
-                  <th>Role</th>
-                  <th>Status</th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Unit</th>
+                  <th>Cost</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-[#1E130B]">
-                    <td>{user.username}</td>
+                {filteredMeds.map((medication) => (
+                  <tr key={medication.id} className="hover:bg-[#1E130B]">
+                    <td>{medication.name}</td>
+                    <td>{medication.type}</td>
+                    <td>{medication.unit}</td>
+                    <td>{medication.cost}</td>
                     <td>
-                      <span className={`badge badge-soft badge-success`}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td>{user.status}</td>
-                    <td>
-                      <button onClick={() => setEditUser(user)} className="btn btn-ghost">
+                      {" "}
+                      <button
+                        onClick={() => setEditMed(medication)}
+                        className="btn btn-link"
+                      >
                         <SquarePen />
+                      </button>
+                      <button
+                        onClick={() => hdlDelete(medication.id)}
+                        className="btn btn-link"
+                      >
+                        <Trash2 />
                       </button>
                     </td>
                   </tr>
@@ -181,17 +193,18 @@ function Reports() {
           </div>
         </div>
       </div>
-      <CreateUserModal
+      <CreateMedModal
         isOpen={isModalShow}
         onClose={() => setIsModalShow(false)}
-        onUserCreated={fetchUsers}
+        onMedCreated={fetchMeds}
       />
-      <UpdateUserModal
-      userToEdit={editUser}
-      isOpen={!!editUser}
-      onClose={() => setEditUser(null)}
-      onUserUpdated = {fetchUsers} />
+      <UpdateMedModal
+        medToEdit={editMed}
+        isOpen={!!editMed}
+        onClose={() => setEditMed(null)}
+        onMedUpdated={fetchMeds}
+      />
     </>
   );
 }
-export default Reports;
+export default MedicationsPage

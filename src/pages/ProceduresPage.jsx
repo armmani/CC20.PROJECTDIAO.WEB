@@ -1,16 +1,19 @@
 import { Hand, LoaderCircle, SquarePen, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { deleteProcedure, getAllProcedures } from "../api/procedureApi";
+import { toast } from "react-toastify";
+import CreateProcedureModal from "../components/modal/procedure.modal/CreateProcedureModal";
+import UpdateProcedureModal from "../components/modal/procedure.modal/UpdateProcedureModal";
 
-function Procedures() {
+function ProceduresPage() {
   const [procedure, setProcedure] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [smartSearch, setSmartSearch] = useState("");
   const [isModalShow, setIsModalShow] = useState(false);
-  const [editMed, setEditMed] = useState(null);
+  const [editProcedure, setEditProcedure] = useState(null);
 
-  const fetchProcedure = async () => {
+  const fetchProcedures = async () => {
     try {
       setLoading(true);
       const response = await getAllProcedures();
@@ -24,7 +27,7 @@ function Procedures() {
   };
 
   useEffect(() => {
-    fetchProcedure();
+    fetchProcedures();
   }, []);
 
   if (loading) {
@@ -52,11 +55,11 @@ function Procedures() {
       if (confirmed) {
         await deleteProcedure(procId);
         toast.success("Procedure Deleted");
-        fetchMeds();
+        fetchProcedures();
       }
     } catch (err) {
       console.log(err);
-      toast.error("Failed to Delete Medicine");
+      toast.error("Failed to Delete Procedure");
     }
   };
   return (
@@ -136,13 +139,13 @@ function Procedures() {
                     <td>
                       {" "}
                       <button
-                        onClick={() => setEditMed(medication)}
+                        onClick={() => setEditProcedure(procedure)}
                         className="btn btn-link"
                       >
                         <SquarePen />
                       </button>
                       <button
-                        onClick={() => hdlDelete(medication.id)}
+                        onClick={() => hdlDelete(procedure.id)}
                         className="btn btn-link"
                       >
                         <Trash2 />
@@ -155,7 +158,18 @@ function Procedures() {
           </div>
         </div>
       </div>
+      <CreateProcedureModal
+        isOpen={isModalShow}
+        onClose={() => setIsModalShow(false)}
+        onProcedureCreated={fetchProcedures}
+      />
+      <UpdateProcedureModal
+        procedureToEdit={editProcedure}
+        isOpen={!!editProcedure}
+        onClose={() => setEditProcedure(null)}
+        onProcedureUpdated={fetchProcedures}
+      />
     </>
   );
 }
-export default Procedures;
+export default ProceduresPage

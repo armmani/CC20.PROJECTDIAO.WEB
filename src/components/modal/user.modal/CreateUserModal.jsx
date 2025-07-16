@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { registerSchema } from "../utils/validator";
+import { registerSchema } from "../../../utils/validator";
 import { toast } from "react-toastify";
-import { createUser } from "../api/userApi";
+import { createUser } from "../../../api/userApi";
 
 function CreateUserModal({ isOpen, onClose, onUserCreated }) {
   const modalRef = useRef(null);

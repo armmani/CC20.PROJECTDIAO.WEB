@@ -1,6 +1,43 @@
-import { Calendar, CheckCircle, CircleDollarSign } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle,
+  CircleDollarSign,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { getAllVisits } from "../api/visitApi";
 
-function Visits() {
+function VisitsPage() {
+  const navigate = useNavigate();
+  const hdlCreateVisit = () => {
+    navigate("/visits/create");
+  };
+  const [visits, setVisits] = useState([]);
+  const [loading, setLoading] = useState(true)
+  const [smartSearch, setSmartSearch] = useState("");
+  const filteredVisits = visits.filter(
+    (visit) =>
+      visit?.pet?.pet_name.toLowerCase().includes(smartSearch.toLowerCase()) ||
+      visit?.pet?.owner?.owner_name.toLowerCase().includes(smartSearch.toLowerCase())
+  );
+
+  useEffect( () => {
+    const fetchVisits = async () => {
+      setLoading(true)
+      try {
+        const response = await getAllVisits();
+        setVisits(response.data.result); 
+      } catch (err) {
+        setVisits([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchVisits()
+  }, [])
+console.log('filteredVisits', filteredVisits)
   return (
     <>
       <div className="flex flex-col items-center">
@@ -65,20 +102,24 @@ function Visits() {
                 <input
                   type="search"
                   className="grow placeholder:text-[#E09766] text-[#E09766]"
-                  placeholder="Search Visits / Pets / Owners"
+                  placeholder="Search Pets / Owners"
+                  value={smartSearch}
+                  onChange={(e) => setSmartSearch(e.target.value)}
                 />
               </label>
             </div>
           </div>
 
-          <button className="btn mr-4 bg-[#CD7438] text-[#2A1D13]">
+          <button
+            onClick={hdlCreateVisit}
+            className="btn mr-4 bg-[#CD7438] text-[#2A1D13]"
+          >
             + Add New Visit
           </button>
         </div>
         <div className="flex">
           <div className="overflow-x-auto rounded-box border border-[#3E2B20] bg-[#2A1D13] text-[#DC7C3C]">
-            <table className="table w-[900px]">
-              {/* head */}
+            <table className="table w-[900px] text-center">
               <thead>
                 <tr className="text-[#98735B]">
                   <th>Date/Time</th>
@@ -92,28 +133,47 @@ function Visits() {
                 </tr>
               </thead>
               <tbody>
-                {/* row 1 */}
-                <tr className="hover:bg-[#1E130B]">
-                  <td>Cy Ganderton</td>
-                  <td>Quality Control Specialist</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                </tr>
-                <tr className="hover:bg-[#1E130B]">
-                  <td>Cy Ganderton</td>
-                  <td>Quality Control Specialist</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                  <td>Blue</td>
-                </tr>
+                {filteredVisits.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-center">
+                      No Visits
+                    </td>
+                  </tr>
+                ) : (
+                  filteredVisits.map((visit, i) => (
+                    <tr className="hover:bg-[#1E130B]" key={visits.id || i}>
+                      <td>{visit.createdAt}</td>
+                      <td>
+                        {visit.pet.pet_name}
+                        <br />
+                        <span className="text-xs text-[#98735B]">
+                          {visit.owner.owner_name}
+                        </span>
+                      </td>
+                      <td>{visit.cc}</td>
+                      <td>{visit.dx}</td>
+                      <td>{visit.weight}</td>
+                      <td>{visit.cost}</td>
+                      <td>{visit.status}</td>
+                      <td>
+                        <button
+                          onClick={() => {
+                          }}
+                          className="btn btn-link"
+                        >
+                          <SquarePen />
+                        </button>
+                        <button
+                          onClick={() => {
+                          }}
+                          className="btn btn-link"
+                        >
+                          <Trash2 />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -122,4 +182,4 @@ function Visits() {
     </>
   );
 }
-export default Visits;
+export default VisitsPage;

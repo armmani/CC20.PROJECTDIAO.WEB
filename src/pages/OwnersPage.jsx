@@ -8,10 +8,11 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getAllOwners } from "../api/ownerApi";
-import CreateOwnerModal from "../components/CreateOwnerModal";
-import UpdateOwnerModal from "../components/UpdateOwnerModa";
+import CreateOwnerModal from "../components/modal/owner.modal/CreateOwnerModal";
+import UpdateOwnerModal from "../components/modal/owner.modal/UpdateOwnerModa";
 
-function Owners() {
+
+function OwnersPage() {
   const [owners, setOwners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -154,8 +155,6 @@ function Owners() {
                   <th>Tel</th>
                   <th>LineID</th>
                   <th>Address</th>
-                  <th>Last Visit</th>
-                  <th>Total Spending</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -167,8 +166,6 @@ function Owners() {
                     <td>{owner.tel_number}</td>
                     <td>{owner.line_id}</td>
                     <td>{owner.address}</td>
-                    <td>hcLastVisit</td>
-                    <td>totalSpending</td>
                     <td>{owner.status}</td>
                     <td>
                       {" "}
@@ -200,4 +197,4 @@ function Owners() {
     </>
   );
 }
-export default Owners;
+export default OwnersPage

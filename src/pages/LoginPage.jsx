@@ -6,7 +6,7 @@ import { useUserStore } from "../stores/userStore";
 import { toast } from "react-toastify";
 import { LoaderCircle } from "lucide-react";
 
-function Login() {
+function LoginPage() {
   const login = useUserStore((state) => state.login);
 
   const navigate = useNavigate();
@@ -20,11 +20,11 @@ function Login() {
 
   const hdlLogin = async (data) => {
     try {
-      console.log('data', data)
+      console.log("data", data);
       await new Promise((resolve) => setTimeout(resolve, 500));
       const resp = await login(data);
       toast.success(resp.data.message);
-      reset()
+      reset();
       navigate("/dashboard");
     } catch (err) {
       const errMessage = err.response.data?.message || err.message;
@@ -32,7 +32,7 @@ function Login() {
       toast.error(errMessage);
     }
   };
- 
+
   return (
     <>
       <div className="flex items-center h-screen flex-col mt-20">
@@ -95,4 +95,4 @@ function Login() {
     </>
   );
 }
-export default Login;
+export default LoginPage;

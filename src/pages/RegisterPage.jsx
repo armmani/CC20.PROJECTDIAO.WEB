@@ -4,7 +4,7 @@ import { registerSchema } from "../utils/validator";
 import { useNavigate } from "react-router";
 import axios from "axios";
 
-function Register({ resetForm }) {
+function RegisterPage({ resetForm }) {
   const { handleSubmit, register, formState, reset } = useForm({
     resolver: yupResolver(registerSchema),
     mode: "onBlur",
@@ -87,4 +87,4 @@ function Register({ resetForm }) {
     </>
   );
 }
-export default Register;
+export default RegisterPage;

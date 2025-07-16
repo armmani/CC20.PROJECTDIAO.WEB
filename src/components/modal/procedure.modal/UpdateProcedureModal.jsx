@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { updateMed } from "../api/medicationApi";
+import { updateProcedure } from "../../../api/procedureApi";
 
-function UpdateMedModal({ isOpen, onClose, onMedUpdated, medToEdit }) {
+function UpdateProcedureModal({ isOpen, onClose, onProcedureUpdated, procedureToEdit }) {
   const modalRef = useRef(null);
   const { register, handleSubmit, reset } = useForm();
 
@@ -16,21 +16,21 @@ function UpdateMedModal({ isOpen, onClose, onMedUpdated, medToEdit }) {
   }, [isOpen]);
 
   useEffect(() => {
-    if (medToEdit) {
-      reset(medToEdit);
+    if (procedureToEdit) {
+      reset(procedureToEdit);
     }
-  }, [medToEdit, reset]);
+  }, [procedureToEdit, reset]);
 
   const onSubmit = async (data) => {
-    const medId = medToEdit.id;
+    const procId = procedureToEdit.id;
     try {
-      await updateMed(medId, data);
-      toast.success("Medication Updated");
-      onMedUpdated();
+      await updateProcedure(procId, data);
+      toast.success("Procedure Updated");
+      onProcedureUpdated();
       onClose();
     } catch (err) {
       console.log("err", err);
-      toast.error(err.response?.data?.message || "Failed to Update Medication");
+      toast.error(err.response?.data?.message || "Failed to Update Procedure");
     }
   };
 
@@ -39,36 +39,29 @@ function UpdateMedModal({ isOpen, onClose, onMedUpdated, medToEdit }) {
       <form onSubmit={handleSubmit(onSubmit)}>
         <fieldset className="fieldset text-[#DC7C3C] bg-[#1E130B] border border-[#3C2A1F] rounded-box w-xs p-4">
         <legend className="fieldset-legend text-[#DC7C3C]">
-          Medication Detail
+          Procedure Detail
           </legend>
 
-          <label className="label">Medication Name</label>
+          <label className="label">Procedure Name</label>
           <input
             {...register("name")}
             type="text"
             className="input bg-[#1E130B]"
-            placeholder="Medication Name"
+            placeholder="Procedure Name"
           />
-          <label className="label">Type</label>
-          <select
-            {...register("type")}
-            className="select bg-[#1E130B]"
-          >
-            <option value="TX">Tx</option>
-            <option value="RX">Rx</option>
-          </select>
-          <label className="label">Unit</label>
+          <label className="label">Description</label>
           <input
-            {...register("unit")}
+            {...register("description")}
             type="text"
             className="input bg-[#1E130B]"
-            placeholder="Unit"
+            placeholder="Description"
           />
 
           <label className="label">Cost</label>
           <input
             {...register("cost")}
             type="number"
+            step="any"
             className="input bg-[#1E130B]"
             placeholder="Cost"
           />
@@ -87,4 +80,4 @@ function UpdateMedModal({ isOpen, onClose, onMedUpdated, medToEdit }) {
   );
 }
 
-export default UpdateMedModal;
+export default UpdateProcedureModal;

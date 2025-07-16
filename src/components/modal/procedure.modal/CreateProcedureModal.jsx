@@ -1,9 +1,9 @@
-import { useEffect, useRef} from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { createOwner } from "../api/ownerApi";
+import { createProcedure } from "../../../api/procedureApi";
 
-function CreateOwnerModal({ isOpen, onClose, onOwnerCreated }) {
+function CreateProcedureModal({ isOpen, onClose, onProcedureCreated }) {
   const modalRef = useRef(null);
 
   const {
@@ -18,21 +18,21 @@ function CreateOwnerModal({ isOpen, onClose, onOwnerCreated }) {
       modalRef.current?.showModal();
     } else {
       modalRef.current?.close();
-      reset()
+      reset();
     }
   }, [isOpen]);
 
   const onSubmit = async (data) => {
     try {
-      console.log(data)
-      await createOwner(data);
-      toast.success("Owner Created");
+      console.log(data);
+      await createProcedure(data);
+      toast.success("Procedure Created");
       reset();
-      onOwnerCreated();
+      onProcedureCreated();
       onClose();
     } catch (err) {
       console.log("err000", err);
-      toast.error(err.response?.data?.message || "Failed to Create Owner");
+      toast.error(err.response?.data?.message || "Failed to Create Procedure");
     }
   };
 
@@ -41,44 +41,32 @@ function CreateOwnerModal({ isOpen, onClose, onOwnerCreated }) {
       <form onSubmit={handleSubmit(onSubmit)}>
         <fieldset className="fieldset text-[#DC7C3C] bg-[#1E130B] border border-[#3C2A1F] rounded-box w-xs p-4">
           <legend className="fieldset-legend text-[#DC7C3C]">
-            New Owner
+            New Procedure
           </legend>
 
-          <label className="label">Owner Name</label>
+          <label className="label">Procedure Name</label>
           <input
-            {...register("owner_name")}
+            {...register("name")}
             type="text"
             className="input bg-[#1E130B]"
-            placeholder="Owner Name"
+            placeholder="Procedure Name"
+          />
+          <label className="label">Description</label>
+          <input
+            {...register("description")}
+            type="text"
+            className="input bg-[#1E130B]"
+            placeholder="Description"
           />
 
-          <label className="label">Telephone Number</label>
+          <label className="label">Cost</label>
           <input
-            {...register("tel_number")}
+            {...register("cost")}
             type="number"
+            step="any"
             className="input bg-[#1E130B]"
-            placeholder="Tel No."
+            placeholder="Cost"
           />
-
-          <label className="label">Line ID</label>
-          <input
-            {...register("line_id")}
-            type="text"
-            className="input bg-[#1E130B]"
-            placeholder="Line ID"
-          />
-          <label className="label">Address</label>
-          <input
-            {...register("address")}
-            type="text"
-            className="input bg-[#1E130B]"
-            placeholder="Address"
-          />
-          <label className="label">Status</label>
-          <select {...register("status")} className="select bg-[#1E130B]" disabled>
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="INACTIVE">INACTIVE</option>
-          </select>
 
           <div className="modal-action">
             <button type="button" onClick={onClose} className="btn btn-ghost">
@@ -94,4 +82,4 @@ function CreateOwnerModal({ isOpen, onClose, onOwnerCreated }) {
   );
 }
 
-export default CreateOwnerModal;
+export default CreateProcedureModal;

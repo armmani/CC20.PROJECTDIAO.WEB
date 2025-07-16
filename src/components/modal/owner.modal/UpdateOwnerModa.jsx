@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { updateOwner } from "../api/ownerApi";
+import { updateOwner } from "../../../api/ownerApi";
 
 function UpdateOwnerModal({ isOpen, onClose, onOwnerUpdated, ownerToEdit }) {
   const modalRef = useRef(null);

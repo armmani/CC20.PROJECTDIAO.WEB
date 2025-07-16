@@ -1,12 +1,12 @@
 import Header from "../components/Header"
-import Register from "../pages/Register"
+import RegisterPage from "../pages/RegisterPage"
 
 function RegisterLayout() {
       
   return (
     <div>
       <Header />
-      <Register />
+      <RegisterPage />
     </div>
   )
 }

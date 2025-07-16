@@ -8,10 +8,10 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getAllPets } from "../api/petApi";
-import CreatePetModal from "../components/CreatePetModal";
-import UpdatePetModal from "../components/UpdatePetModal";
+import CreatePetModal from "../components/modal/pet.modal/CreatePetModal";
+import UpdatePetModal from "../components/modal/pet.modal/UpdatePetModal";
 
-function Pets() {
+function PetsPage() {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -215,9 +215,19 @@ function Pets() {
                     <td>
                       {new Date(pet.birth_date).toLocaleDateString("th-TH")}
                     </td>
-                    <td>HardCodeWeight</td>
+                    <td>
+                      {pet.visits && pet.visits.length > 0
+                        ? pet.visits[0].weight
+                        : "-"}
+                    </td>
                     <td>{pet.owner.owner_name}</td>
-                    <td>HardCodeLastVisit</td>
+                    <td>
+                      {pet.visits && pet.visits.length > 0
+                        ? new Date(pet.visits[0].createdAt).toLocaleDateString(
+                            "th-TH"
+                          )
+                        : "-"}
+                    </td>
                     <td>{pet.status}</td>
                     <td>
                       {" "}
@@ -249,4 +259,4 @@ function Pets() {
     </>
   );
 }
-export default Pets;
+export default PetsPage;

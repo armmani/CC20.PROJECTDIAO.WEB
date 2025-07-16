@@ -7,13 +7,14 @@ import LoginLayout from "../layouts/LoginLayout";
 import RegisterLayout from "../layouts/RegisterLayout";
 import { useUserStore } from "../stores/userStore";
 
-const Dashboard = lazy(() => import("../pages/Dashboard"));
-const Medications = lazy(() => import("../pages/Medications"));
-const Owners = lazy(() => import("../pages/Owners"));
-const Pets = lazy(() => import("../pages/Pets"));
-const Procedures = lazy(() => import("../pages/Procedures"));
-const Reports = lazy(() => import("../pages/Reports"));
-const Visits = lazy(() => import("../pages/Visits"));
+const DashboardPage = lazy(() => import("../pages/DashboardPage"));
+const MedicationsPage = lazy(() => import("../pages/MedicationsPage"));
+const OwnersPage = lazy(() => import("../pages/OwnersPage"));
+const PetsPage = lazy(() => import("../pages/PetsPage"));
+const ProceduresPage = lazy(() => import("../pages/ProceduresPage"));
+const ReportsPage = lazy(() => import("../pages/ReportsPage"));
+const VisitsPage = lazy(() => import("../pages/VisitsPage"));
+const CreateVisitPage = lazy(() => import("../pages/CreateVisitPage"))
 
 const guestRouter = createBrowserRouter([
   { path: "/login", element: <LoginLayout /> },
@@ -26,17 +27,18 @@ const userRouter = createBrowserRouter([
     path: "/",
     element: <UserLayout />,
     children: [
-      { index: true, element: <Dashboard /> },
-      { path: "medications", element: <Medications /> },
-      { path: "owners", element: <Owners /> },
-      { path: "pets", element: <Pets /> },
-      { path: "procedures", element: <Procedures /> },
-      { path: "visits", element: <Visits /> },
+      { index: true, element: <DashboardPage /> },
+      { path: "medications", element: <MedicationsPage /> },
+      { path: "owners", element: <OwnersPage /> },
+      { path: "pets", element: <PetsPage /> },
+      { path: "procedures", element: <ProceduresPage /> },
+      { path: "visits", element: <VisitsPage /> },
+      { path: "visits/create", element: <CreateVisitPage />},
       {
         path: "reports",
         element: (
           <ProtectedRoute allowedRoles={["ADMIN"]}>
-            <Reports />
+            <ReportsPage />
           </ProtectedRoute>
         ),
       },
@@ -53,7 +55,7 @@ function AppRouter() {
   }, []);
   const token = useUserStore((state) => state.token);
   const rightRouter = token ? userRouter : guestRouter;
-// console.log('isUserLoaded', isUserLoaded)
+  
   if(!isUserLoaded) {
     return (
       <p className="flex items-center justify-center w-screen h-screen">

@@ -1,63 +1,56 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { createPet } from "../api/petApi";
-import { getAllOwners } from "../api/ownerApi";
+import { updatePet } from "../../../api/petApi";
 
-function CreatePetModal({ isOpen, onClose, onPetCreated }) {
+function UpdatePetModal({ isOpen, onClose, onPetUpdated, petToEdit }) {
   const modalRef = useRef(null);
-  const [smartSearch, setSmartSearch] = useState("");
-  const [allOwners, setAllOwners] = useState([]);
-  const [selectedOwnerId, setSelectedOwnerId] = useState(null);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm();
+  const { register, handleSubmit, reset } = useForm();
 
   useEffect(() => {
     if (isOpen) {
       modalRef.current?.showModal();
-      const fetchOwners = async () => {
-        try {
-          const response = await getAllOwners();
-          setAllOwners(response.data.owners);
-        } catch (err) {
-          console.log("Failed to Fetch Owner", err);
-          toast.error("cannnot Load Owner List");
-        }
-      };
-      fetchOwners();
     } else {
       modalRef.current?.close();
-      reset();
-      setSmartSearch("");
-      setSelectedOwnerId(null);
     }
-  }, [isOpen, reset]);
+  }, [isOpen]);
 
-  const filterOwners = smartSearch
-    ? allOwners.filter((owner) =>
-        owner.owner_name.toLowerCase().includes(smartSearch.toLowerCase())
-      )
-    : [];
+  useEffect(() => {
+    if (petToEdit) {
+      const formattedDate = new Date(petToEdit.birth_date)
+        .toISOString()
+        .substring(0, 10);
+      const formattedSterilization = petToEdit.sterilization ? "TRUE" : "FALSE";
+
+      reset({
+        ...petToEdit,
+        birth_date: formattedDate,
+        sterilization: formattedSterilization,
+      });
+    }
+  }, [petToEdit, reset]);
 
   const onSubmit = async (data) => {
-    const changeToBoolean = {
-      ...data,
+    if (!petToEdit) return;
+    const { ownerId, ...petData } = data;
+    const dataPetUpdate = {
+      ...petData,
       sterilization: data.sterilization === "TRUE",
       birth_date: new Date(data.birth_date).toISOString(),
+      owner: {
+        connect: {
+          id: +ownerId,
+        },
+      },
     };
     try {
-      await createPet(changeToBoolean);
-      toast.success("Pet Created");
-      reset();
-      onPetCreated();
+      await updatePet(petToEdit.id, dataPetUpdate);
+      toast.success("Pet Updated");
+      onPetUpdated();
       onClose();
     } catch (err) {
       console.log("err", err);
-      toast.error(err.response?.data?.message || "Failed to Create Pet");
+      toast.error(err.response?.data?.message || "Failed to Update Pet");
     }
   };
 
@@ -65,9 +58,7 @@ function CreatePetModal({ isOpen, onClose, onPetCreated }) {
     <dialog ref={modalRef} className="modal" onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <fieldset className="fieldset text-[#DC7C3C] bg-[#1E130B] border border-[#3C2A1F] rounded-box w-xs p-4">
-          <legend className="fieldset-legend text-[#DC7C3C]">
-            Create New Pet
-          </legend>
+          <legend className="fieldset-legend text-[#DC7C3C]">Pet Profile</legend>
 
           <label className="label">Pet Name</label>
           <input
@@ -114,14 +105,7 @@ function CreatePetModal({ isOpen, onClose, onPetCreated }) {
             <option value="ACTIVE">ACTIVE</option>
             <option value="INACTIVE">INACTIVE</option>
           </select>
-          <label className="label">Owner</label>
-          <input
-            {...register("ownerId")}
-            type="text"
-            className="input bg-[#1E130B]"
-            placeholder="Owner ID"
-            disabled
-          />
+          <label className="label">Owner ID</label>
           <input
             {...register("ownerId")}
             type="text"
@@ -134,7 +118,7 @@ function CreatePetModal({ isOpen, onClose, onPetCreated }) {
               Cancel
             </button>
             <button type="submit" className="btn bg-[#CD7438] text-[#2A1D13]">
-              Create
+              Update
             </button>
           </div>
         </fieldset>
@@ -143,4 +127,4 @@ function CreatePetModal({ isOpen, onClose, onPetCreated }) {
   );
 }
 
-export default CreatePetModal;
+export default UpdatePetModal;
