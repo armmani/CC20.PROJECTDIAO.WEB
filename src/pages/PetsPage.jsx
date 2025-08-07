@@ -58,7 +58,6 @@ function PetsPage() {
     .filter((pet) =>
       pet.pet_name.toLowerCase().includes(smartSearch.toLowerCase())
     );
-  // console.log("Current Pet to Edit:", editPet)
   return (
     <>
       <div className="flex flex-col items-center">
@@ -72,47 +71,6 @@ function PetsPage() {
                   Total Pets
                 </div>
                 <div className="stat-value text-[#E09766]">{pets.length}</div>
-              </div>
-            </div>
-          </div>
-          <div className="stats shadow flex-1">
-            <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-              <Heart size={48} color="#dc7c3c" />
-
-              <div className="flex flex-col">
-                <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  Healthy
-                </div>
-                <div className="stat-value text-[#E09766]">
-                  {pets.filter((pet) => pet.status === null).length}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="stats shadow flex-1">
-            <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-              <SquareActivity size={48} color="#dc7c3c" />
-
-              <div className="flex flex-col">
-                <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  In Treatment
-                </div>
-                <div className="stat-value text-[#E09766]">
-                  {" "}
-                  {pets.filter((pet) => pet.status !== null).length}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="stats shadow flex-1">
-            <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-              <Calendar size={48} color="#dc7c3c" />
-
-              <div className="flex flex-col">
-                <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  Recent Visits
-                </div>
-                <div className="stat-value text-[#E09766]">xxx</div>
               </div>
             </div>
           </div>

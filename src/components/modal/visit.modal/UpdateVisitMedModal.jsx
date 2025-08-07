@@ -2,13 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { getAllMeds } from "../../../api/medicationApi";
-import { visitAddMedications } from "../../../api/visitApi";
+import { visitUpdateMedication } from "../../../api/visitMedicationApi";
 
-function CreateVisitMedModal({ isOpen, onClose, visitId, onMedAdded }) {
+
+function UpdateVisitMedModal({ isOpen, onClose, visitId, onMedUpdated, medToEdit }) {
   const modalRef = useRef(null);
-  const [medSearch, setMedSearch] = useState("");
-  const [allMeds, setAllMeds] = useState([]);
-  const [selectedMed, setSelectedMed] = useState(null);
   const {
     register,
     handleSubmit,
@@ -18,61 +16,37 @@ function CreateVisitMedModal({ isOpen, onClose, visitId, onMedAdded }) {
   } = useForm();
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && medToEdit) {
       modalRef.current?.showModal();
-      const fetchMeds = async () => {
-        try {
-          const response = await getAllMeds();
-          setAllMeds(response.data.result);
-        } catch (err) {
-          console.log("Failed to Fetch Medication", err);
-          toast.error("cannnot Load Medication List");
-        }
-      };
-      fetchMeds();
+      setValue("frequency", medToEdit.frequency);
+      setValue("dosage", medToEdit.dosage);
+      setValue("quantity", medToEdit.quantity);
+      setValue("notes", medToEdit.notes);
+      setValue("cost", medToEdit.cost);
     } else {
       modalRef.current?.close();
       reset();
-      setMedSearch("");
-      setSelectedMed(null);
     }
-  }, [isOpen, reset]);
+  }, [isOpen, medToEdit, setValue, reset]);
 
-  const filteredMeds = medSearch
-    ? allMeds.filter((med) =>
-        med.name.toLowerCase().includes(medSearch.toLowerCase())
-      )
-    : [];
 
   const onSubmit = async (data) => {
-    if (!selectedMed) {
-      toast.error("Please Select a Medication from the List");
-      return;
-    }
     const payload = {
       ...data,
       cost: parseFloat(data.cost),
       quantity: parseInt(data.quantity),
       visitId: visitId,
-      medicationId: selectedMed.id,
+      medicationId: medToEdit.medicationId,
     };
     try {
-      console.log("visitId", visitId);
-      console.log("payload", payload);
-      await visitAddMedications(visitId, payload);
-      toast.success("Medication added to Visit");
-      onMedAdded();
+      console.log("payload",payload)
+      await visitUpdateMedication(medToEdit.id, payload);
+      toast.success("Medication Updated");
+      onMedUpdated();
       onClose();
     } catch (err) {
-      console.log("err", err);
-      toast.error(err.response?.data?.message || "Failed to Add Medication");
+      toast.error(err.response?.data?.message || "Failed to Update Medication");
     }
-  };
-
-  const hdlSelectMed = (med) => {
-    setSelectedMed(med);
-    setMedSearch(med.name);
-    setValue("cost", med.cost);
   };
 
   return (
@@ -80,35 +54,22 @@ function CreateVisitMedModal({ isOpen, onClose, visitId, onMedAdded }) {
       <form onSubmit={handleSubmit(onSubmit)}>
         <fieldset className="fieldset text-[#DC7C3C] bg-[#1E130B] border border-[#3C2A1F] rounded-box w-xs p-4">
           <legend className="fieldset-legend text-[#DC7C3C]">
-            Add Medicine
+            Update Medicine
           </legend>
 
-          <label className="label">Search Medication</label>
+          <label className="label">Medication Name</label>
           <div className="dropdown w-full">
             <input
               type="text"
-              value={medSearch}
-              onChange={(e) => {
-                setMedSearch(e.target.value);
-                setSelectedMed(null);
-              }}
+              value={medToEdit.name}
               className="input bg-[#1E130B]"
-              placeholder="Medication ID"
+              disabled
             />
-            {filteredMeds.length > 0 && !selectedMed && (
-              <ul className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full mt-2">
-                {filteredMeds.map((med) => (
-                  <li key={med.id}>
-                    <button type="button" onClick={() => hdlSelectMed(med)}>
-                      {med.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+   
           </div>
 
-          <select {...register("frequency")} className="select bg-[#1E130B]">
+          <label className="label">Frequency</label>
+          <select {...register("frequency", {required: true})} className="select bg-[#1E130B]">
             <option value="SID">SID</option>
             <option value="BID">BID</option>
             <option value="TID">TID</option>
@@ -122,14 +83,14 @@ function CreateVisitMedModal({ isOpen, onClose, visitId, onMedAdded }) {
           </select>
           <label className="label">Dosage</label>
           <input
-            {...register("dosage")}
+            {...register("dosage", {required: true})}
             type="text"
             className="input bg-[#1E130B]"
             placeholder="Dosage"
           />
           <label className="label">Quantity</label>
           <input
-            {...register("quantity")}
+            {...register("quantity", {required:true})}
             type="number"
             className="input bg-[#1E130B]"
             placeholder="Quantity"
@@ -141,7 +102,6 @@ function CreateVisitMedModal({ isOpen, onClose, visitId, onMedAdded }) {
             className="input bg-[#1E130B]"
             placeholder="Note"
           />
-
           <label className="label">Cost</label>
           <input
             {...register("cost")}
@@ -149,7 +109,7 @@ function CreateVisitMedModal({ isOpen, onClose, visitId, onMedAdded }) {
             step="any"
             className="input bg-[#1E130B]"
             placeholder="Cost"
-            disabled= "true"
+            disabled
           />
 
           <div className="modal-action">
@@ -157,7 +117,7 @@ function CreateVisitMedModal({ isOpen, onClose, visitId, onMedAdded }) {
               Cancel
             </button>
             <button type="submit" className="btn bg-[#CD7438] text-[#2A1D13]">
-              Add
+              Update
             </button>
           </div>
         </fieldset>
@@ -166,4 +126,4 @@ function CreateVisitMedModal({ isOpen, onClose, visitId, onMedAdded }) {
   );
 }
 
-export default CreateVisitMedModal;
+export default UpdateVisitMedModal;

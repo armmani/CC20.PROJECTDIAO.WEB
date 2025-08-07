@@ -11,6 +11,7 @@ import { deleteMed, getAllMeds } from "../api/medicationApi";
 import CreateMedModal from "../components/modal/med.modal/CreateMedModal";
 import UpdateMedModal from "../components/modal/med.modal/UpdateMedModal";
 import { toast } from "react-toastify";
+import DeleteMedModal from "../components/modal/Delete.modal";
 
 function MedicationsPage() {
   const [meds, setMeds] = useState([]);
@@ -19,6 +20,7 @@ function MedicationsPage() {
   const [smartSearch, setSmartSearch] = useState("");
   const [isModalShow, setIsModalShow] = useState(false);
   const [editMed, setEditMed] = useState(null);
+  const [medToDelete, setMedToDelete] = useState(null);
 
   const fetchMeds = async () => {
     try {
@@ -53,22 +55,17 @@ function MedicationsPage() {
     medication.name.toLowerCase().includes(smartSearch.toLocaleLowerCase())
   );
 
-  const hdlDelete = async(medId) => {
-    console.log(medId)
+  const hdlConfirmDelete = async () => {
     try {
-      const confirmed = window.confirm(
-        "Are you sure you want to delete this medication?"
-      );
-      if (confirmed) {
-        await deleteMed(medId);
-        toast.success("Medication Deleted");
-        fetchMeds();
-      }
+      await deleteMed(medToDelete.id);
+      toast.success("Medication Deleted");
+      fetchMeds();
     } catch (err) {
-      console.log(err)
-      toast.error("Failed to Delete Medicine")
+      toast.error("Failed to Delete Medicine");
+    } finally {
+      setMedToDelete(null);
     }
-  }
+  };
 
   const txCount = meds.filter((med) => med.type === "TX").length;
   const rxCount = meds.filter((med) => med.type === "RX").length;
@@ -180,7 +177,7 @@ function MedicationsPage() {
                         <SquarePen />
                       </button>
                       <button
-                        onClick={() => hdlDelete(medication.id)}
+                        onClick={() => setMedToDelete(medication)}
                         className="btn btn-link"
                       >
                         <Trash2 />
@@ -204,7 +201,12 @@ function MedicationsPage() {
         onClose={() => setEditMed(null)}
         onMedUpdated={fetchMeds}
       />
+      <DeleteMedModal
+        isOpen={!!medToDelete}
+        onClose={() => setMedToDelete(null)}
+        onConfirm={hdlConfirmDelete}
+      />
     </>
   );
 }
-export default MedicationsPage
+export default MedicationsPage;

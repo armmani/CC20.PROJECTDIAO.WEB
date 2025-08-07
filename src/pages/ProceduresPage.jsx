@@ -4,6 +4,7 @@ import { deleteProcedure, getAllProcedures } from "../api/procedureApi";
 import { toast } from "react-toastify";
 import CreateProcedureModal from "../components/modal/procedure.modal/CreateProcedureModal";
 import UpdateProcedureModal from "../components/modal/procedure.modal/UpdateProcedureModal";
+import DeleteModal from "../components/modal/Delete.modal";
 
 function ProceduresPage() {
   const [procedure, setProcedure] = useState([]);
@@ -12,6 +13,7 @@ function ProceduresPage() {
   const [smartSearch, setSmartSearch] = useState("");
   const [isModalShow, setIsModalShow] = useState(false);
   const [editProcedure, setEditProcedure] = useState(null);
+  const [procToDelete, setProcToDelete] = useState(null);
 
   const fetchProcedures = async () => {
     try {
@@ -46,20 +48,15 @@ function ProceduresPage() {
     procedure.name.toLowerCase().includes(smartSearch.toLocaleLowerCase())
   );
 
-  const hdlDelete = async (procId) => {
-    console.log(procId);
+  const hdlDelete = async () => {
     try {
-      const confirmed = window.confirm(
-        "Are you sure you want to delete this procedure?"
-      );
-      if (confirmed) {
-        await deleteProcedure(procId);
-        toast.success("Procedure Deleted");
-        fetchProcedures();
-      }
+      await deleteProcedure(procToDelete);
+      toast.success("Procedure Deleted Successfully");
+      fetchProcedures();
     } catch (err) {
-      console.log(err);
       toast.error("Failed to Delete Procedure");
+    } finally {
+      setProcToDelete(null);
     }
   };
   return (
@@ -145,7 +142,7 @@ function ProceduresPage() {
                         <SquarePen />
                       </button>
                       <button
-                        onClick={() => hdlDelete(procedure.id)}
+                        onClick={() => setProcToDelete(procedure.id)}
                         className="btn btn-link"
                       >
                         <Trash2 />
@@ -169,7 +166,12 @@ function ProceduresPage() {
         onClose={() => setEditProcedure(null)}
         onProcedureUpdated={fetchProcedures}
       />
+      <DeleteModal
+        isOpen={!!procToDelete}
+        onClose={() => setProcToDelete(null)}
+        onConfirm={hdlDelete}
+      />
     </>
   );
 }
-export default ProceduresPage
+export default ProceduresPage;

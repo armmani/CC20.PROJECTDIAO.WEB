@@ -133,6 +133,7 @@ function CreateVisitProcModal({ isOpen, onClose, visitId, onProcAdded }) {
             step="any"
             className="input bg-[#1E130B]"
             placeholder="Cost per unit"
+            disabled="true"
           />
 
           <div className="modal-action">

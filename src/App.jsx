@@ -15,7 +15,7 @@ function App() {
   }, []);
   return (
     <>
-      <div className="bg-[#1E130B] h-screen w-screen">
+      <div className="bg-[#1E130B] min-h-screen min-w-screen">
         <AppRouter />
         <ToastContainer position="bottom-right" style={{ zIndex: 99999 }} />
       </div>

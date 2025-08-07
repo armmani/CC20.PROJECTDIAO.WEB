@@ -12,8 +12,14 @@ import CreateVisitProcModal from "../components/modal/visit.modal/CreateVisitPro
 import { getAllPets } from "../api/petApi";
 import { visitDeleteProcedure } from "../api/visitProcedureApi";
 import { visitDeleteMedication } from "../api/visitMedicationApi";
+import { useNavigate } from "react-router";
+import DeleteModal from "../components/modal/Delete.modal";
+import UpdateVisitMedModal from "../components/modal/visit.modal/UpdateVisitMedModal";
+import UpdateVisitProcModal from "../components/modal/visit.modal/UpdateVIsitProcModal";
 
 function CreateVisitPage() {
+  const navigate = useNavigate();
+
   const [savedVisit, setSavedVisit] = useState(null);
   const [isMedModalOpen, setIsMedModalOpen] = useState(false);
   const [isProcModalOpen, setIsProcModalOpen] = useState(false);
@@ -26,38 +32,37 @@ function CreateVisitPage() {
   const [petSearch, setPetSearch] = useState("");
   const [allPets, setAllPets] = useState([]);
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteAction, setDeleteAction] = useState(null);
+
   const [editProc, setEditProc] = useState(null);
-  const hdlDeleteProc = async (id) => {
+  const hdlDeleteProc = (id) => {
     if (!savedVisit) return;
-    try {
-      const confirmed = window.confirm(
-        "Are you sure you want to delete this procedure?"
-      );
-      if (confirmed) {
+    setDeleteAction(() => async () => {
+      try {
         await visitDeleteProcedure(id);
         await fetchVisitProcs(savedVisit.id);
         toast.success("Procedure Deleted");
+      } catch (err) {
+        toast.error("Failed to Delete Procedure");
       }
-    } catch (err) {
-      toast.error("Failed to Delete Procedure");
-    }
+    });
+    setIsDeleteModalOpen(true);
   };
 
   const [editMed, setEditMed] = useState(null);
   const hdlDeleteMed = async (id) => {
     if (!savedVisit) return;
-    try {
-      const confirmed = window.confirm(
-        "Are you sure you want to delete this medication?"
-      );
-      if (confirmed) {
+    setDeleteAction(() => async () => {
+      try {
         await visitDeleteMedication(id);
         await fetchVisitMeds(savedVisit.id);
         toast.success("Medication Deleted");
+      } catch (err) {
+        toast.error("Failed to Delete Procedure");
       }
-    } catch (err) {
-      toast.error("Failed to Delete Procedure");
-    }
+    });
+    setIsDeleteModalOpen(true);
   };
 
   useEffect(() => {
@@ -154,10 +159,7 @@ function CreateVisitPage() {
     <>
       <div className="flex justify-around p-8 gap-8 w-full">
         <form onSubmit={handleSubmit(onSubmit)} className="flex-1">
-          <fieldset
-            disabled={!!savedVisit}
-            className="fieldset text-[#DC7C3C] bg-[#2A1D13] border-[#3D2B20] text-lg gap-5 rounded-box border p-4 flex flex-col"
-          >
+          <fieldset className="fieldset text-[#DC7C3C] bg-[#2A1D13] border-[#3D2B20] text-lg gap-5 rounded-box border p-4 flex flex-col">
             <legend className="fieldset-legend text-[#DC7C3C]">
               Visit Record
             </legend>
@@ -174,6 +176,7 @@ function CreateVisitPage() {
                     }}
                     className="input w-full bg-[#1E130B] border-[#3D2B20]"
                     placeholder="Search Pet by Name ..."
+                    disabled={!!savedVisit}
                   />
                   {filteredPets.length > 0 && petSearch && !selectedPet && (
                     <ul className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-full mt-2 max-h-60 overflow-y-auto">
@@ -196,6 +199,7 @@ function CreateVisitPage() {
                   step="any"
                   className="input w-full bg-[#1E130B] border-[#3D2B20]"
                   placeholder="Weight"
+                  disabled={!!savedVisit}
                 />
               </div>
             </div>
@@ -206,6 +210,7 @@ function CreateVisitPage() {
                 type="text"
                 className="input w-full bg-[#1E130B] border-[#3D2B20]"
                 placeholder="CC"
+                disabled={!!savedVisit}
               />
             </div>
             <div>
@@ -215,6 +220,7 @@ function CreateVisitPage() {
                 type="text"
                 className="input w-full bg-[#1E130B] border-[#3D2B20]"
                 placeholder="Hx"
+                disabled={!!savedVisit}
               />
             </div>
             <div>
@@ -226,6 +232,7 @@ function CreateVisitPage() {
                 type="text"
                 className="input w-full bg-[#1E130B] border-[#3D2B20]"
                 placeholder="PE"
+                disabled={!!savedVisit}
               />
             </div>
             <div>
@@ -235,13 +242,35 @@ function CreateVisitPage() {
                 type="text"
                 className="input w-full bg-[#1E130B] border-[#3D2B20]"
                 placeholder="Dx"
+                disabled={!!savedVisit}
               />
             </div>
-            {!savedVisit && (
+            {!savedVisit ? (
               <button className="btn bg-red-800 text-[#CDB4A2] text-xl">
                 <Save />
                 SAVE
               </button>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSavedVisit(null)}
+                  className="btn bg-[#DC7C3C] text-[#2A1D13] text-xl"
+                >
+                  <SquarePen />
+                  EDIT
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.success("Record Done");
+                    navigate("/visits");
+                  }}
+                  className="btn bg-red-800 text-white text-xl"
+                >
+                  RECORD DONE
+                </button>
+              </div>
             )}
           </fieldset>
         </form>
@@ -296,11 +325,24 @@ function CreateVisitPage() {
                         <td>{(med.cost * med.quantity).toFixed(2)}</td>
                         <td>
                           <button
-                            onClick={() => setEditMed(med)}
+                            onClick={() =>
+                              setEditMed({
+                                id: med.id,
+                                name: med.medication.name,
+                                medicationId: med.medication.id,
+
+                                cost: med.cost,
+                                frequency: med.frequency,
+                                dosage: med.dosage,
+                                quantity: med.quantity,
+                                notes: med.notes,
+                              })
+                            }
                             className="btn btn-link"
                           >
                             <SquarePen />
                           </button>
+
                           <button
                             onClick={() => hdlDeleteMed(med.id)}
                             className="btn btn-link"
@@ -336,8 +378,8 @@ function CreateVisitPage() {
                   <tr>
                     <th></th>
                     <th>Procedure</th>
-                    <th>Cost</th>
                     <th>Quantity</th>
+                    <th>Cost</th>
                     <th>Total Cost</th>
                     <th>Action</th>
                   </tr>
@@ -354,16 +396,17 @@ function CreateVisitPage() {
                     <tr key={proc.id}>
                       <th>{idProcTable + 1}</th>
                       <td>{proc.procedure.name}</td>
-                      <td>{proc.cost}</td>
                       <td>{proc.quantity}</td>
+                      <td>{proc.cost}</td>
                       <td>{(proc.cost * proc.quantity).toFixed(2)}</td>
-                      <td>
+                      <td className="flex justify-center">
                         <button
                           onClick={() => setEditProc(proc)}
                           className="btn btn-link"
                         >
                           <SquarePen />
                         </button>
+
                         <button
                           onClick={() => hdlDeleteProc(proc.id)}
                           className="btn btn-link"
@@ -390,6 +433,34 @@ function CreateVisitPage() {
         onClose={() => setIsProcModalOpen(false)}
         visitId={savedVisit?.id}
         onProcAdded={hdlProcAdded}
+      />
+      {editMed && (
+        <UpdateVisitMedModal
+          isOpen={!!editMed}
+          onClose={() => setEditMed(null)}
+          onMedUpdated={hdlMedAdded}
+          medToEdit={editMed}
+          visitId={savedVisit?.id}
+        />
+      )}
+      {editProc && (
+        <UpdateVisitProcModal
+          isOpen={!!editProc}
+          onClose={() => setEditProc(null)}
+          onProcUpdated={hdlProcAdded}
+          procToEdit={editProc}
+          visitId={savedVisit?.id}
+        />
+      )}
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onCancel={() => setIsDeleteModalOpen(false)}
+        onConfirm={async () => {
+          if (deleteAction) {
+            await deleteAction();
+            setIsDeleteModalOpen(false);
+          }
+        }}
       />
     </>
   );

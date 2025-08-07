@@ -2,42 +2,70 @@ import {
   Calendar,
   CheckCircle,
   CircleDollarSign,
+  CircleX,
   SquarePen,
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { getAllVisits } from "../api/visitApi";
+import { getAllVisits, softDeleteVIsit } from "../api/visitApi";
+import { toast } from "react-toastify";
+import DeleteModal from "../components/modal/Delete.modal";
 
 function VisitsPage() {
   const navigate = useNavigate();
   const hdlCreateVisit = () => {
     navigate("/visits/create");
   };
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [visitToDelete, setVisitToDelete] = useState(null);
   const [visits, setVisits] = useState([]);
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
   const [smartSearch, setSmartSearch] = useState("");
   const filteredVisits = visits.filter(
     (visit) =>
-      visit?.pet?.pet_name.toLowerCase().includes(smartSearch.toLowerCase()) ||
-      visit?.pet?.owner?.owner_name.toLowerCase().includes(smartSearch.toLowerCase())
+      visit?.pet?.pet_name?.toLowerCase().includes(smartSearch.toLowerCase()) ||
+      visit?.pet?.owner?.owner_name
+        ?.toLowerCase()
+        .includes(smartSearch.toLowerCase())
   );
+  console.log(filteredVisits)
 
-  useEffect( () => {
+  useEffect(() => {
     const fetchVisits = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
         const response = await getAllVisits();
-        setVisits(response.data.result); 
+        setVisits(response.data.result);
       } catch (err) {
-        setVisits([])
+        setVisits([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
+    };
+    fetchVisits();
+  }, []);
+
+  const confirmDelete = async () => {
+    if (!visitToDelete) return;
+    try {
+      await softDeleteVIsit(visitToDelete.id);
+      setVisits((prev) =>
+        prev.filter((visit) => visit.id !== visitToDelete.id)
+      );
+      toast.success("Visit Removed");
+    } catch (err) {
+      toast.error("Failed To Delete");
+    } finally {
+      setDeleteModalOpen(false);
+      setVisitToDelete(null);
     }
-    fetchVisits()
-  }, [])
-console.log('filteredVisits', filteredVisits)
+  };
+
+  const totalRevenue = visits
+    .filter((e) => e.status === "ACTIVE")
+    .reduce((sum, e) => sum + Number(e.cost || 0), 0);
+
   return (
     <>
       <div className="flex flex-col items-center">
@@ -48,24 +76,13 @@ console.log('filteredVisits', filteredVisits)
 
               <div className="flex flex-col">
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  Today's Visits
+                  Total Visits
                 </div>
-                <div className="stat-value text-[#E09766]">345</div>
+                <div className="stat-value text-[#E09766]">{visits.length}</div>
               </div>
             </div>
           </div>
-          <div className="stats shadow flex-1">
-            <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-              <CheckCircle size={48} color="#dc7c3c" />
-
-              <div className="flex flex-col">
-                <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  Completed
-                </div>
-                <div className="stat-value text-[#E09766]">300</div>
-              </div>
-            </div>
-          </div>
+        
           <div className="stats shadow flex-1">
             <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
               <CircleDollarSign size={48} color="#dc7c3c" />
@@ -74,7 +91,7 @@ console.log('filteredVisits', filteredVisits)
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   Today's Revenue
                 </div>
-                <div className="stat-value text-[#E09766]">฿ 200</div>
+                <div className="stat-value text-[#E09766]">฿ {totalRevenue}</div>
               </div>
             </div>
           </div>
@@ -127,8 +144,6 @@ console.log('filteredVisits', filteredVisits)
                   <th>Chief Complaint</th>
                   <th>Diagnosis</th>
                   <th>Weight</th>
-                  <th>Cost</th>
-                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -141,30 +156,26 @@ console.log('filteredVisits', filteredVisits)
                   </tr>
                 ) : (
                   filteredVisits.map((visit, i) => (
-                    <tr className="hover:bg-[#1E130B]" key={visits.id || i}>
-                      <td>{visit.createdAt}</td>
+                    <tr className="hover:bg-[#1E130B]" key={visit.id || i}>
+                      <td>
+                        {new Date(visit.createdAt).toLocaleString("th-TH")}
+                      </td>
                       <td>
                         {visit.pet.pet_name}
                         <br />
                         <span className="text-xs text-[#98735B]">
-                          {visit.owner.owner_name}
+                          {visit.pet.owner.owner_name}
                         </span>
                       </td>
                       <td>{visit.cc}</td>
                       <td>{visit.dx}</td>
                       <td>{visit.weight}</td>
-                      <td>{visit.cost}</td>
-                      <td>{visit.status}</td>
-                      <td>
+                      <td className="flex justify-center">
+                        
                         <button
                           onClick={() => {
-                          }}
-                          className="btn btn-link"
-                        >
-                          <SquarePen />
-                        </button>
-                        <button
-                          onClick={() => {
+                            setVisitToDelete(visit);
+                            setDeleteModalOpen(true);
                           }}
                           className="btn btn-link"
                         >
@@ -179,6 +190,13 @@ console.log('filteredVisits', filteredVisits)
           </div>
         </div>
       </div>
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onCancel={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="Confirm Delete"
+        message={`Remove visit of ${visitToDelete?.pet?.pet_name}?`}
+      />
     </>
   );
 }

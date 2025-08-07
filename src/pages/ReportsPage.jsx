@@ -11,14 +11,13 @@ import { getAllUsers } from "../api/userApi";
 import CreateUserModal from "../components/modal/user.modal/CreateUserModal";
 import UpdateUserModal from "../components/modal/user.modal/UpdateUserModal";
 
-
 function ReportsPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [smartSearch, setSmartSearch] = useState("");
   const [isModalShow, setIsModalShow] = useState(false);
-  const [editUser, setEditUser] = useState(null)
+  const [editUser, setEditUser] = useState(null);
 
   const fetchUsers = async () => {
     try {
@@ -62,7 +61,6 @@ function ReportsPage() {
           <div className="stats shadow flex-1">
             <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
               <UsersRound size={48} color="#dc7c3c" />
-
               <div className="flex flex-col">
                 <div className="stat-title text-[#98735B] flex items-center gap-2">
                   Total Users
@@ -85,32 +83,7 @@ function ReportsPage() {
               </div>
             </div>
           </div>
-          <div className="stats shadow flex-1">
-            <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-              <CircleDollarSign size={48} color="#dc7c3c" />
-
-              <div className="flex flex-col">
-                <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  Total Revenue
-                </div>
-                <div className="stat-value text-[#E09766]">xxx</div>
-              </div>
-            </div>
-          </div>
-          <div className="stats shadow flex-1">
-            <div className="stat border border-[#3C2A1F] bg-[#2A1D13] rounded-box flex items-center">
-              <Calendar size={48} color="#dc7c3c" />
-
-              <div className="flex flex-col">
-                <div className="stat-title text-[#98735B] flex items-center gap-2">
-                  Total Visits
-                </div>
-                <div className="stat-value text-[#E09766]">xxx</div>
-              </div>
-            </div>
-          </div>
         </div>
-        <div>Graph</div>
         <div className="flex border border-[#3C2A1F] bg-[#2A1D13] m-6 rounded-box w-[900px] justify-between items-center">
           <div className="flex items-center m-4 flex-1">
             <div className="flex w-full">
@@ -171,7 +144,10 @@ function ReportsPage() {
                     </td>
                     <td>{user.status}</td>
                     <td>
-                      <button onClick={() => setEditUser(user)} className="btn btn-link">
+                      <button
+                        onClick={() => setEditUser(user)}
+                        className="btn btn-link"
+                      >
                         <SquarePen />
                       </button>
                     </td>
@@ -188,11 +164,12 @@ function ReportsPage() {
         onUserCreated={fetchUsers}
       />
       <UpdateUserModal
-      userToEdit={editUser}
-      isOpen={!!editUser}
-      onClose={() => setEditUser(null)}
-      onUserUpdated = {fetchUsers} />
+        userToEdit={editUser}
+        isOpen={!!editUser}
+        onClose={() => setEditUser(null)}
+        onUserUpdated={fetchUsers}
+      />
     </>
   );
 }
-export default ReportsPage
+export default ReportsPage;

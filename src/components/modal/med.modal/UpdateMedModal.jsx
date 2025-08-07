@@ -1,30 +1,37 @@
-import { useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useRef, useState } from "react";
+import { set, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { updateMed } from "../../../api/medicationApi";
+import { getAllMeds, updateMed } from "../../../api/medicationApi";
 
 function UpdateMedModal({ isOpen, onClose, onMedUpdated, medToEdit }) {
   const modalRef = useRef(null);
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && medToEdit) {
       modalRef.current?.showModal();
+
+      if (medToEdit) {
+        reset();
+        setValue("name", medToEdit.name);
+        setValue("type", medToEdit.type);
+        setValue("unit", medToEdit.unit);
+        setValue("cost", medToEdit.cost);
+      }
     } else {
       modalRef.current?.close();
+      reset();
     }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (medToEdit) {
-      reset(medToEdit);
-    }
-  }, [medToEdit, reset]);
+  }, [isOpen, medToEdit, reset, setValue]);
 
   const onSubmit = async (data) => {
-    const medId = medToEdit.id;
     try {
-      await updateMed(medId, data);
+      await updateMed(medToEdit.id, {
+        name: data.name,
+        type: data.type,
+        unit: data.unit,
+        cost: parseFloat(data.cost),
+      });
       toast.success("Medication Updated");
       onMedUpdated();
       onClose();
@@ -38,8 +45,8 @@ function UpdateMedModal({ isOpen, onClose, onMedUpdated, medToEdit }) {
     <dialog ref={modalRef} className="modal" onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <fieldset className="fieldset text-[#DC7C3C] bg-[#1E130B] border border-[#3C2A1F] rounded-box w-xs p-4">
-        <legend className="fieldset-legend text-[#DC7C3C]">
-          Medication Detail
+          <legend className="fieldset-legend text-[#DC7C3C]">
+            Medication Detail
           </legend>
 
           <label className="label">Medication Name</label>
@@ -49,21 +56,12 @@ function UpdateMedModal({ isOpen, onClose, onMedUpdated, medToEdit }) {
             className="input bg-[#1E130B]"
             placeholder="Medication Name"
           />
+
           <label className="label">Type</label>
-          <select
-            {...register("type")}
-            className="select bg-[#1E130B]"
-          >
+          <select {...register("type")} className="select bg-[#1E130B]">
             <option value="TX">Tx</option>
             <option value="RX">Rx</option>
           </select>
-          <label className="label">Unit</label>
-          <input
-            {...register("unit")}
-            type="text"
-            className="input bg-[#1E130B]"
-            placeholder="Unit"
-          />
 
           <label className="label">Cost</label>
           <input
@@ -72,6 +70,13 @@ function UpdateMedModal({ isOpen, onClose, onMedUpdated, medToEdit }) {
             step="any"
             className="input bg-[#1E130B]"
             placeholder="Cost"
+          />
+          <label className="label">Unit</label>
+          <input
+            {...register("unit")}
+            type="text"
+            className="input bg-[#1E130B]"
+            placeholder="Unit"
           />
 
           <div className="modal-action">
